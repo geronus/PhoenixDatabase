@@ -10,23 +10,23 @@ echo "<A HREF='admin.php'>Back to Index</A><br><br>";
 $data = trim($_POST["eingabe"]);
 $data = str_replace("ent: 0", "", $data); //no idea what this even does..???
 
-$data = str_replace(",", "", $data);
-$data = preg_replace('/Personal Tax: [0-9]{1,3}%/', 'REMOVE_ME', $data);
-$separator = (strpos($data, "\n\n") !== false ? "\n\n" : "\r\n\r\n");
-$data = str_replace('REMOVE_ME'. $separator, '', $data);
+$data = str_replace(",", "", $data);  //gets rid of all the commas
+$data = preg_replace('/Personal Tax: [0-9]{1,3}%/', 'REMOVE_ME', $data);  //gets rid of any lines where the personal tax is displayed
+$separator = (strpos($data, "\n\n") !== false ? "\n\n" : "\r\n\r\n");  //sets the array separtor to be "\n\n" if it is found in the text copied, otherwise it's "\r\n\r\n"
+$data = str_replace('REMOVE_ME'. $separator, '', $data);  //removes all the lines that got replaced with 'REMOVE_ME' and inserts null characters instead
 
-$data = explode($separator, $data);
-$errors = $new_members = $updated = array();
+$data = explode($separator, $data);  //separates the data into an array with 1 entry per person
+$errors = $new_members = $updated = array();  //does something with errors because they are new members.
 
-$i2 = count($data);
-for($i = 0; $i < $i2; $i++){
-	$values = explode("\n", $data[$i]);
+$i2 = count($data);  //counts the number of array entries
+for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
+	$values = explode("\n", $data[$i]);  //turns this entry of the array into its own array, breaking the data by "\n" (return)
 	
 	if (strpos($values[0], '-') === false)
 		continue; //the first result isn't a member.. maybe they selected more text than they should have?
 	
 	if (trim($values[1]) != 'Donations') {
-		while (count($values) > 0 && trim($values[1]) != 'Donations') {
+		while (count($values) > 0 && trim($values[1]) != 'Donations') {  //looks like this while loop gets rid of blank entries in the values before the 'Donations' entry comes up.
 			$error = array_shift($values);
 			$error = explode(' ', $error);
 			$error = trim(str_replace('-', '', $error[0]));
@@ -41,7 +41,7 @@ for($i = 0; $i < $i2; $i++){
 	}
 
 	$name = explode(' ', $values[0]);
-	$name = trim(str_replace('-', '', $name[0]));
+	$name = trim(str_replace('-', '', $name[0]));  //pulls the name out of the first entry and truncates where the first space is (ignoring last name and online status)
 	
 	if (strpos($values[2], 'Level: ') === false) {
 		$errors[] = $name;
