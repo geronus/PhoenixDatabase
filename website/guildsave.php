@@ -62,7 +62,9 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 	$dp = trim(str_replace('DP: ', '', $values[11]));
 	$dpspent = trim(str_replace('DP Spent: ', '', $values[12]));
 	$rpgained = trim(str_replace('rp gained: ', '', strtolower($values[13]))); 
+	$double = trim(str_replace('Double Donated: ', '', $values[14]));  //added double here (shows up in the list after RP Gained).
 	
+	//this section is all about converting the lyrania money nomenclature to numbers (from 100p 20g 55s 11c to 100205511)
 	$plat = 0;
 	$gold = 0;
 	$silver = 0;
@@ -96,6 +98,7 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 	$irondiff = 0;
 	$stonediff = 0;
 	$lumberdiff = 0;
+	$doublediff = 0;  //added for monitoring double dontations.
 	$dpdiff = 0;
 	$dpspentdiff = 0;
 	$rpgaineddiff = 0;
@@ -112,7 +115,8 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 		if ($row === false)
 			continue; //there was an error inputting, let's move on.
 	}
-		
+	
+	//calculates the difference in the various stats from the previous entry into the table for that user.
 	$lvldiff = $level - $row["Level"];
 	$xpdiff = $xp - $row["EXP"];
 	$moneydiff = $money - $row["Money"];
@@ -122,6 +126,7 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 	$irondiff = $iron - $row["Iron"];
 	$stonediff = $stone - $row["Stone"];
 	$lumberdiff = $lumber - $row["Lumber"];
+	$doublediff = $double - if($row["Double"] === False){ 0 } else { $row["Double"]}; //calculate double difference from last time.
 	$dpdiff = $dp - $row["GDP"];
 
 	$dpspentdiff = $dpspent - $row['GDPSpent'];
@@ -135,7 +140,7 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 		Money = '$money', Jade = '$jade', 
 		Food = '$food', Iron = '$iron', 
 		Stone = '$stone', 
-		Lumber = '$lumber', 
+		Lumber = '$lumber',  Double '$double',  //added the double being put into the table.  needs to update the table to include the double field.
 		GDP = '$dp', GDPSpent = '$dpspent',
 		Gems = '$gem', RPGained = '$rpgained',
 		Active = '0'
@@ -154,8 +159,8 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 	mysqli_query($link, $sql) or die(mysqli_error());
 	$sql = "INSERT INTO Updates 
 		(`GameID`,`Name`, `Level`, `Quests`, `Kills`, `BaseStat`, `BuffStat`, `DP`, 
-		`XP`, `Money`, `Jade`, `Gems`, `Food`, `Iron`, `Stone`, `Lumber`, `GDP`, `GDPSpent`, `RPGained`, `Update`) 
-		VALUES ('". ($profile === false ? '0' : $profile['gameid']) ."', '$name', '$lvldiff', ";
+		`XP`, `Money`, `Jade`, `Gems`, `Food`, `Iron`, `Stone`, `Lumber`, `Double`, `GDP`, `GDPSpent`, `RPGained`, `Update`) 
+		VALUES ('". ($profile === false ? '0' : $profile['gameid']) ."', '$name', '$lvldiff', ";  //added Double here too.
 	if ($profile !== false) {
 		$sql .= "
 			'". $profile['quests_diff'] ."',
@@ -169,7 +174,7 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 		$sql .= "'0', '0', '0', '0', '0',";
 	}
 	$sql .= "'$xpdiff', '$moneydiff', '$jadediff', '$gemdiff', '$fooddiff', '$irondiff', '$stonediff', 
-		'$lumberdiff', '$dpdiff', '$dpspentdiff', '$rpgaineddiff', NOW());";
+		'$lumberdiff', '$doublediff', '$dpdiff', '$dpspentdiff', '$rpgaineddiff', NOW());";  //added double diff here.
 	mysqli_query($link, $sql) or die(mysqli_error($link));
 	/* echo "Name: " . $name . "<br>";
 	echo "Level: " . $level . "(+ " . $lvldiff . ")<br>";
@@ -181,6 +186,7 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 	echo "Iron: " . $iron . "(+ " . $irondiff . ")<br>";
 	echo "Stone: " . $stone . "(+ " . $stonediff . ")<br>";
 	echo "Lumber: " . $lumber . "(+ " . $lumberdiff . ")<br>";
+	echo "Double: " . $double . "(+ " . $doublediff . ")<br>";  // added double / double diff here too.
 	echo "Guild DP: " . $dp . "(+ " . $dpdiff . ")<br>"; */
 	$updated[] = $name;
 	
