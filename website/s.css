@@ -1,0 +1,19 @@
+i.z {
+	font-style: normal;
+	color: #ff0;
+	background: -webkit-linear-gradient(#ff0, #f00); 
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
+i.y {
+	font-style: normal;
+	color: #ff0;
+}
+
+i.k {
+	font-style: normal;
+	color: #9370DB;
+	background: -webkit-linear-gradient(#ff0, #9370DB);
+	-webkit-background-clip: text;
+	-webkit-text-fill-color: transparent;
+}
