@@ -7,26 +7,54 @@ $curr_members = get_all_member_info();
 $active_members = get_active_member_names();
 
 echo "<A HREF='admin.php'>Back to Index</A><br><br>";
+
+//1. strip any leading or trailing whitespace characters
 $data = trim($_POST["eingabe"]);
-$data = str_replace("ent: 0", "", $data); //no idea what this even does..???
 
-$data = str_replace(",", "", $data);  //gets rid of all the commas
-$data = preg_replace('/Personal Tax: [0-9]{1,3}%/', 'REMOVE_ME', $data);  //gets rid of any lines where the personal tax is displayed
-$separator = (strpos($data, "\n\n") !== false ? "\n\n" : "\r\n\r\n");  //sets the array separtor to be "\n\n" if it is found in the text copied, otherwise it's "\r\n\r\n"
-$data = str_replace('REMOVE_ME'. $separator, '', $data);  //removes all the lines that got replaced with 'REMOVE_ME' and inserts null characters instead
+//2. Remove any instances of the substring "ent: 0" - unclear why this is necessary
+$data = str_replace("ent: 0", "", $data);
 
-$data = explode($separator, $data);  //separates the data into an array with 1 entry per person
-$errors = $new_members = $updated = array();  //does something with errors because they are new members.
+//3. Remove all commas
+$data = str_replace(",", "", $data);
 
-$i2 = count($data);  //counts the number of array entries
-for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
-	$values = explode("\n", $data[$i]);  //turns this entry of the array into its own array, breaking the data by "\n" (return)
+//4. Replace substrings containing personal tax info with "REMOVE_ME"
+$data = preg_replace('/Personal Tax: [0-9]{1,3}%/', 'REMOVE_ME', $data);
+
+//5. Designate a separator - this reflects the two newlines or carriage returns separating each member in the list
+// The separator will be a double newline (LF) if found in the text, otherwise a double CRLF; assume this is
+// necessary due to differences between browsers/operating systems
+$separator = (strpos($data, "\n\n") !== false ? "\n\n" : "\r\n\r\n");
+
+//6. Remove all "REMOVE_ME" substrings that are both preceded and followed by a separator (which should be all of them)
+// includes removing the separators - this should leave just one separator between each member in the text
+$data = str_replace($separator . 'REMOVE_ME' . $separator, '', $data);
+
+//7. Explode the string into an array by separator; the result should be one member per index
+$data = explode($separator, $data);
+
+//8. Create 3 new arrays for errors, new members and updated members
+$errors = $new_members = $updated = array(); 
+
+//9. Do cool stuff
+
+$i2 = count($data);
+
+//Loop over the array
+for ($i = 0; $i < $i2; $i++) { 
 	
+	//Generate a subarray where each index holds one line of text from a member's information block
+	$values = explode("\n", $data[$i]);
+	
+	//Verify that the first line is the line containing a member's name, and if not skip this entry altogether
+	//We detect this by looking for a dash
 	if (strpos($values[0], '-') === false)
-		continue; //the first result isn't a member.. maybe they selected more text than they should have?
-	
+		continue;
+
+	//If the second line isn't "Donations", do some unnecessarily complicated shit to try to get the
+	//name of the member whose shit is fucked up and remove that member from the $active_members array
+	//while also storing each unreadable line in the $errors array
 	if (trim($values[1]) != 'Donations') {
-		while (count($values) > 0 && trim($values[1]) != 'Donations') {  //looks like this while loop gets rid of blank entries in the values before the 'Donations' entry comes up.
+		while (count($values) > 0 && trim($values[1]) != 'Donations') {
 			$error = array_shift($values);
 			$error = explode(' ', $error);
 			$error = trim(str_replace('-', '', $error[0]));
@@ -34,10 +62,14 @@ for($i = 0; $i < $i2; $i++){  //loops through the array of peoples' data
 			if (isset($active_members[$error]))
 				unset($active_members[$error]);
 		}
+		//If $values is NULL, that means we array_shift'ed the array to death and never 
+		//found the "Donations" line, so move on to the next member
 		if (!$values) 
-			continue; //we've gone through all the names...
+			continue;
+		//This would only happen if the loop above returned an empty array, which I suppose is
+		//possible. Either way, it means the same thing as above, so move on
 		else if (trim($values[1]) != 'Donations')
-			continue; //uh.. absolutely no idea why this would happen, but just in case!
+			continue;
 	}
 
 	$name = explode(' ', $values[0]);
