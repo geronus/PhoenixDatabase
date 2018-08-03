@@ -25,17 +25,21 @@ $data = preg_replace('/Personal Tax: [0-9]{1,3}%/', 'REMOVE_ME', $data);
 // necessary due to differences between browsers/operating systems
 $separator = (strpos($data, "\n\n") !== false ? "\n\n" : "\r\n\r\n");
 
-//6. Remove all "REMOVE_ME" substrings that are both preceded and followed by a separator (which should be all of them)
+//6. Remove all "REMOVE_ME" substrings that are followed by a separator (which should be all of them)
 // includes removing the separators - this should leave just one separator between each member in the text
-$data = str_replace($separator . 'REMOVE_ME' . $separator, '', $data);
+$data = str_replace('REMOVE_ME' . $separator, '', $data);
 
-//7. Explode the string into an array by separator; the result should be one member per index
+//7. Since there's now an extra separator between the name and "Donations", hunt it down and kill it.
+//In this case we search for a separator followed by "Donations" and replace it with just "Donations".
+$data = preg_replace('/' . $separator . 'Donations/', 'Donations', $data);
+
+//8. Explode the string into an array by separator; the result should be one member per index
 $data = explode($separator, $data);
 
-//8. Create 3 new arrays for errors, new members and updated members
+//9. Create 3 new arrays for errors, new members and updated members
 $errors = $new_members = $updated = array(); 
 
-//9. Do cool stuff
+//10. Do cool stuff - edit: nevermind, it's not cool
 
 $i2 = count($data);
 
@@ -62,7 +66,7 @@ for ($i = 0; $i < $i2; $i++) {
 			if (isset($active_members[$error]))
 				unset($active_members[$error]);
 		}
-		//If $values is NULL, that means we array_shift'ed the array to death and never 
+		//If $values is NULL, that means we array_shift()'ed the array to death and never 
 		//found the "Donations" line, so move on to the next member
 		if (!$values) 
 			continue;
@@ -72,16 +76,26 @@ for ($i = 0; $i < $i2; $i++) {
 			continue;
 	}
 
+	//Break the name line into words, first word is the name + '-'
 	$name = explode(' ', $values[0]);
-	$name = trim(str_replace('-', '', $name[0]));  //pulls the name out of the first entry and truncates where the first space is (ignoring last name and online status)
+	//Strip leading and trailing whitespace just in case
+	$name = trim($name[0]);
+	//Cut the last character off the end, which should be the '-'
+	//Can't use str_replace because some people have a '-' in their
+	//name.
+	$name = substr($name, 0, -1);
 	
+	//Second line is "Donations", so if third line isn't "Level", there's a problem,
+	//so skip this entry and log an error.
 	if (strpos($values[2], 'Level: ') === false) {
 		$errors[] = $name;
 		if (isset($active_members[$name]))
 			unset($active_members[$name]);
 		
-		continue; //again, not sure why this is happening, but don't want to update the DB just in case !
+		continue;
 	}
+
+
 	$level = trim(str_replace('Level: ', '', $values[2]));
 	$xp = trim(str_replace('Exp: ', '', $values[3]));
 	$money = trim(str_replace('Money: ', '', $values[4]));
@@ -172,7 +186,7 @@ for ($i = 0; $i < $i2; $i++) {
 		Money = '$money', Jade = '$jade', 
 		Food = '$food', Iron = '$iron', 
 		Stone = '$stone', 
-		Lumber = '$lumber',  Double '$double',  //added the double being put into the table.  needs to update the table to include the double field.
+		Lumber = '$lumber',  Double '$double',
 		GDP = '$dp', GDPSpent = '$dpspent',
 		Gems = '$gem', RPGained = '$rpgained',
 		Active = '0'
