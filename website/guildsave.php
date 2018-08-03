@@ -186,7 +186,7 @@ for ($i = 0; $i < $i2; $i++) {
 		Money = '$money', Jade = '$jade', 
 		Food = '$food', Iron = '$iron', 
 		Stone = '$stone', 
-		Lumber = '$lumber',  Double '$double',
+		Lumber = '$lumber',  Double = '$double',
 		GDP = '$dp', GDPSpent = '$dpspent',
 		Gems = '$gem', RPGained = '$rpgained',
 		Active = '0'
