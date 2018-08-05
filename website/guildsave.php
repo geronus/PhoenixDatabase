@@ -48,7 +48,7 @@ for ($i = 0; $i < $i2; $i++) {
 	
 	//Generate a subarray where each index holds one line of text from a member's information block
 	$values = explode("\n", $data[$i]);
-	
+	/*
 	//Verify that the first line is the line containing a member's name, and if not skip this entry altogether
 	//We detect this by looking for a dash
 	if (strpos($values[0], '-') === false)
@@ -75,7 +75,7 @@ for ($i = 0; $i < $i2; $i++) {
 		else if (trim($values[1]) != 'Donations')
 			continue;
 	}
-
+*/
 	//Break the name line into words, first word is the name + '-'
 	$name = explode(' ', $values[0]);
 	//Strip leading and trailing whitespace just in case
@@ -83,11 +83,13 @@ for ($i = 0; $i < $i2; $i++) {
 	//Cut the last character off the end, which should be the '-'
 	//Can't use str_replace because some people have a '-' in their
 	//name.
-	$name = substr($name, 0, -1);
+	if(substr($name, -1) == '-'){
+		$name = substr($name, 0, -1);
+	}
 	
 	//Second line is "Donations", so if third line isn't "Level", there's a problem,
 	//so skip this entry and log an error.
-	if (strpos($values[2], 'Level: ') === false) {
+	if (strpos($values[1], 'Level: ') === false) {
 		$errors[] = $name;
 		if (isset($active_members[$name]))
 			unset($active_members[$name]);
@@ -96,19 +98,19 @@ for ($i = 0; $i < $i2; $i++) {
 	}
 
 
-	$level = trim(str_replace('Level: ', '', $values[2]));
-	$xp = trim(str_replace('Exp: ', '', $values[3]));
-	$money = trim(str_replace('Money: ', '', $values[4]));
-	$jade = trim(str_replace('Jade: ', '', $values[5]));
-	$gem = trim(str_replace('Gems: ', '', $values[6]));
-	$food = trim(str_replace('Food: ', '', $values[7]));
-	$iron = trim(str_replace('Iron: ', '', $values[8]));
-	$stone = trim(str_replace('Stone: ', '', $values[9]));
-	$lumber = trim(str_replace('Lumber: ', '', $values[10]));
-	$dp = trim(str_replace('DP: ', '', $values[11]));
-	$dpspent = trim(str_replace('DP Spent: ', '', $values[12]));
-	$rpgained = trim(str_replace('rp gained: ', '', strtolower($values[13]))); 
-	$double = trim(str_replace('Double Donated: ', '', $values[14]));  //added double here (shows up in the list after RP Gained).
+	$level = trim(str_replace('Level: ', '', $values[1]));
+	$xp = trim(str_replace('Exp: ', '', $values[2]));
+	$money = trim(str_replace('Money: ', '', $values[3]));
+	$jade = trim(str_replace('Jade: ', '', $values[4]));
+	$gem = trim(str_replace('Gems: ', '', $values[5]));
+	$food = trim(str_replace('Food: ', '', $values[6]));
+	$iron = trim(str_replace('Iron: ', '', $values[7]));
+	$stone = trim(str_replace('Stone: ', '', $values[8]));
+	$lumber = trim(str_replace('Lumber: ', '', $values[9]));
+	$dp = trim(str_replace('DP: ', '', $values[10]));
+	$dpspent = trim(str_replace('DP Spent: ', '', $values[11]));
+	$rpgained = trim(str_replace('RP gained: ', '', strtolower($values[12]))); 
+	$double = trim(str_replace('Double Donated: ', '', $values[13]));  //added double here (shows up in the list after RP Gained).
 	
 	//this section is all about converting the lyrania money nomenclature to numbers (from 100p 20g 55s 11c to 100205511)
 	$plat = 0;
@@ -172,7 +174,7 @@ for ($i = 0; $i < $i2; $i++) {
 	$irondiff = $iron - $row["Iron"];
 	$stonediff = $stone - $row["Stone"];
 	$lumberdiff = $lumber - $row["Lumber"];
-	$doublediff = $double - if($row["Double"] === False){ 0 } else { $row["Double"]}; //calculate double difference from last time.
+	$doublediff = $double - $row["Double"]; //calculate double difference from last time.
 	$dpdiff = $dp - $row["GDP"];
 
 	$dpspentdiff = $dpspent - $row['GDPSpent'];
@@ -186,7 +188,7 @@ for ($i = 0; $i < $i2; $i++) {
 		Money = '$money', Jade = '$jade', 
 		Food = '$food', Iron = '$iron', 
 		Stone = '$stone', 
-		Lumber = '$lumber',  Double = '$double',
+		Lumber = '$lumber',
 		GDP = '$dp', GDPSpent = '$dpspent',
 		Gems = '$gem', RPGained = '$rpgained',
 		Active = '0'
@@ -202,10 +204,10 @@ for ($i = 0; $i < $i2; $i++) {
 		";
 	}
 	$sql .= "WHERE Name = '$name';";
-	mysqli_query($link, $sql) or die(mysqli_error());
+	mysqli_query($link, $sql) or die(mysqli_error($link));
 	$sql = "INSERT INTO Updates 
 		(`GameID`,`Name`, `Level`, `Quests`, `Kills`, `BaseStat`, `BuffStat`, `DP`, 
-		`XP`, `Money`, `Jade`, `Gems`, `Food`, `Iron`, `Stone`, `Lumber`, `Double`, `GDP`, `GDPSpent`, `RPGained`, `Update`) 
+		`XP`, `Money`, `Jade`, `Gems`, `Food`, `Iron`, `Stone`, `Lumber`, `GDP`, `GDPSpent`, `RPGained`, `Update`) 
 		VALUES ('". ($profile === false ? '0' : $profile['gameid']) ."', '$name', '$lvldiff', ";  //added Double here too.
 	if ($profile !== false) {
 		$sql .= "
@@ -220,9 +222,9 @@ for ($i = 0; $i < $i2; $i++) {
 		$sql .= "'0', '0', '0', '0', '0',";
 	}
 	$sql .= "'$xpdiff', '$moneydiff', '$jadediff', '$gemdiff', '$fooddiff', '$irondiff', '$stonediff', 
-		'$lumberdiff', '$doublediff', '$dpdiff', '$dpspentdiff', '$rpgaineddiff', NOW());";  //added double diff here.
+		'$lumberdiff', '$dpdiff', '$dpspentdiff', '$rpgaineddiff', NOW());";  //added double diff here.
 	mysqli_query($link, $sql) or die(mysqli_error($link));
-	/* echo "Name: " . $name . "<br>";
+	/*echo "Name: " . $name . "<br>";
 	echo "Level: " . $level . "(+ " . $lvldiff . ")<br>";
 	echo "XP: " . $xp . "(+ " . $xpdiff . ")<br>";
 	echo "Money: " . $money . "(+ " . $moneydiff . ")<br>";
@@ -233,7 +235,7 @@ for ($i = 0; $i < $i2; $i++) {
 	echo "Stone: " . $stone . "(+ " . $stonediff . ")<br>";
 	echo "Lumber: " . $lumber . "(+ " . $lumberdiff . ")<br>";
 	echo "Double: " . $double . "(+ " . $doublediff . ")<br>";  // added double / double diff here too.
-	echo "Guild DP: " . $dp . "(+ " . $dpdiff . ")<br>"; */
+	echo "Guild DP: " . $dp . "(+ " . $dpdiff . ")<br>";*/
 	$updated[] = $name;
 	
 }
