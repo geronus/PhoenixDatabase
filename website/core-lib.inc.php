@@ -340,7 +340,7 @@ function get_profile($name) {
 
   //this is the magic bit to get the profile page back:
   curl_setopt($ch, CURLOPT_POST, 1);
-  curl_setopt($ch, CURLOPT_POSTFIELDS, 'x='. urlencode($name));
+  curl_setopt($ch, CURLOPT_POSTFIELDS, 'x='. urlencode($name) . '&y=undefined&z=undefined');
   
   $content = curl_exec($ch);
 
