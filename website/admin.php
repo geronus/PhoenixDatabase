@@ -3,8 +3,8 @@
 // ini_set('display_errors', '1');
 date_default_timezone_set("Europe/London");
 
-include("connection.php");
 include_once("core-lib.inc.php");
+include("connection.php");
 
 echo "<HTML><HEAD><TITLE>Phoenix Lab - Admin Tools</TITLE></HEAD><link rel='stylesheet' type='text/css' href='/main.css?v=1' /></HEAD><BODY>";
 include_once("moneyconvert.php");
