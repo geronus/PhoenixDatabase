@@ -2,9 +2,9 @@
 // error_reporting(E_ALL);
 // ini_set('display_errors', '1');
 
-
-include("connection.php");
 include("core-lib.inc.php");
+include("connection.php");
+
 echo "<HTML><HEAD><TITLE>Phoenix Lab</TITLE></HEAD><link rel='stylesheet' type='text/css' href='main.css?v=6' /><BODY>";
 include_once("moneyconvert.php");
 //include("lottery.php");
