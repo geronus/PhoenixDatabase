@@ -1,8 +1,8 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
-include("connection.php");
 include_once('core-lib.inc.php');
+include("connection.php");
 
 if (isset($_POST['Members']) && is_array($_POST['Members'])) {
 	response_json(array('error'=>'This method of updating the DB is no longer active.'));
