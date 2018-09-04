@@ -1,8 +1,8 @@
 <?php
 error_reporting(E_ALL);
 ini_set('display_errors', '1');
-include("connection.php");
 include_once('core-lib.inc.php');
+include("connection.php");
 $curr_members = get_all_member_info();
 $active_members = get_active_member_names();
 
